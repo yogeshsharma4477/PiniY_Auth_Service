@@ -1,0 +1,506 @@
+Q. Prisma vs Mongoose
+>  Prisma manages relational databases like PostgreSQL, MySQL, SQLite, and even MongoDB (recent versions).
+   Mongoose manages only MongoDB and is built specifically for document-based databases.
+
+   Both provide schemas, and give you methods for CRUD operations like:
+   create, find, update, delete
+
+   Prisma does not create schemas inside the database like Mongoose does.
+   Instead:
+        Prisma schema → defines the data model in your application
+        Prisma then generates SQL migrations to update your database
+
+   With Mongoose:
+        Mongoose schema → defines validation rules for MongoDB documents
+        MongoDB itself is schema-less, but Mongoose forces structure
+
+
+Q. What is Prisma ORM?
+>  Prisma is a next-generation ORM for Node.js and TypeScript. It simplifies working with relational databases like PostgreSQL, MySQL, or SQLite.
+   Key components of Prisma:
+     Prisma Client – Auto-generated TypeScript client for querying your database.
+     Prisma Schema – Single .prisma file where you define models (tables), fields (columns), relations, and database configuration.
+     Prisma Migrate – Handles migrations (creating/updating tables) from your schema.
+     Prisma Studio – GUI to browse and manage data.
+
+   How it works:
+     You define your database structure in the schema file.
+     Prisma generates client code you can import in your Node.js/TS app.
+
+
+Q. What is AWS RDS?
+>  RDS = Relational Database Service
+   It’s a service by AWS that lets you run databases without managing servers.
+
+   Think of it this way:
+     Normally, if you want PostgreSQL, you’d have to:
+     Install PostgreSQL on a server or your local machine.
+     Manage backups, updates, and security yourself.
+     Scale manually if traffic grows.
+   With RDS, AWS handles all that for you:
+     The server is managed for you.
+     Backups are automatic.
+     You can scale CPU/memory easily.
+     Security patches are automatic.
+     High availability is possible with Multi-AZ.
+So you just focus on your database and tables, not on the server or OS.
+
+
+Q. Iam Service 
+>  Iam UserName : auth_service_admin
+   ARN arn:aws:iam::666095450871:user/auth_service_admin
+   root : 666095450871
+> User    - using user you can create user in aws 
+> polices - using polices you can authorization user
+> S3 bucket name - it should always be unique and no one should be able to know the bucket name because 
+  if anyone get to know the name they can use your bucket and you will need to have pay so be cautous with the name
+> Never do anything in root user alway do stuffs in Iam user
+> groups - Iam -> user groups -> create groups -> give it a name, attach permission to group
+           Now lets say new employee joins as a developer you just need to add that user in this group
+           how to add?
+           Go to that group -> add users
+           And now some come and says that hey please add the users of developer in ec2 instance
+           so instead add all the user to ec2 instance what we can do is that add ec2 instance to that group and all the user will have the ec2 instance access
+           this is the advantage of groups
+
+
+Q. What is Console Sign-In?
+>. The AWS Management Console is the web interface you use to manage AWS services visually (GUI).
+   Console sign-in allows an IAM user to log in via a browser, click buttons, configure services, and see dashboards.
+   Example: You want to create an RDS instance, set up S3 buckets, view metrics — you need console access.
+
+
+Q. When Console Sign-In is NOT Needed
+>  If the IAM user is only used for applications or scripts (like your Node.js Auth Service connecting to RDS), programmatic access is enough.
+   Programmatic access uses Access Key ID + Secret Access Key to authenticate API calls (CLI, SDK, Terraform). 
+
+
+Q. creating RDS
+> go to AWS -> Aurora and RDS -> create DB -> PostgreSQL -> DB Instance Identifier (Db name) : DB Instance Identifier (paytm-auth-db) -> Master Username (postgres)
+-> Master Password (Yogesh4477!) -> DB Instance Class (db.t3.micro) -> Storage (default) -> Connectivity Public access = Yes -> rest everything is default -> create databse
+paytm-auth-db
+
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@YOUR_ENDPOINT:5432/authdb?schema=public"
+
+
+
+
+
+
+DAY 22.
+Q. HIGH-LEVEL OVERVIEW (How Everything Works)
+> [ Auth Service (Node.js + Express) ]
+               |
+          [ Prisma ORM ]
+               |
+      [ PostgreSQL on AWS RDS ]
+
+     Step-by-step flow:
+          Your Express backend will run locally / on a server.
+          It needs to talk to the AWS PostgreSQL database.
+          Prisma acts like a translator between Node.js and PostgreSQL:
+               You define a schema.prisma
+               Prisma generates a client 
+               Your code uses prisma.user.create(), prisma.user.findUnique(), etc.
+          Prisma uses a DATABASE_URL (connection string) to connect to AWS RDS.
+          RDS allows access only from your allowed IP address using Security Groups.
+
+ 
+Q. STEP 1 — Allow Your Laptop to Connect (Security Group)
+>  AWS BLOCKS EVERYTHING by default.
+   You must allow incoming PostgreSQL traffic (port 5432) from your local machine.
+   NOTE : This is important because when you go live you need to allow ncoming PostgreSQL traffic from you production machine
+
+Q. STEP 2 — Copy the DATABASE URL and add it in your .env
+>. DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@YOUR_ENDPOINT:5432/authdb?schema=public"
+
+Q. STEP 3 — Initialize Prisma in Your Auth Service Project
+>. npm install prisma @prisma/client
+   npx prisma init
+
+   once you create a primsa schema you need to run 
+   > npx prisma generate // Prisma creates a strongly-typed client that you can use in your code:
+
+Q. STEP 5 — Push Schema to RDS
+>. npx prisma db push
+
+Q. How Prisma creates tables in your RDS?
+>  Prisma has two important CLI commands:
+
+1. npx prisma generate
+   - it generates primsa client
+   - this ia a TypeScript library created based on your schema 
+   - it allow you to call:
+      prisma.user.create(...)
+      prisma.user.findMany(...)
+   - it does not create any tables 
+   - it only creates a TypeScript client
+
+2. npx prisma migrate dev --name init
+   this command actually create tables inside postgres RDS
+
+   how does it work is ?
+   > npx prisma migrate dev
+   1st it read your schema.migrate
+   2nd primsa connect to postgres using your .env 
+   3rd primsa create sql migration files where sql query is created  prisma/migrations/20251115123456_init/ migration.sql
+   4th Prisma applies this SQL to your PostgreSQL RDS
+   It sends the SQL directly to your database and table is created in RDS
+
+Q. how will be the table name is decided?
+>. Prisma uses your model name as the table name: model User { ... }
+
+
+Q. Primsa Client
+>  A TypeScript Client is simply an auto-generated library that lets you talk to your database using TypeScript code instead of writing SQL
+   From this schema, Prisma automatically generates TypeScript functions like:
+      prisma.user.create()
+      prisma.user.findUnique()
+      prisma.user.findMany()
+      prisma.user.update()
+      prisma.user.delete()
+
+
+Q. what is schema drift?
+> You have migration files in prisma/migrations/ (created earlier or auto-generated)
+  But your actual RDS database does not match those migration files
+  So Prisma thinks your DB is "out of sync"
+
+LAST NOTE FOR DAY 22
+You only run Prisma commands when your Prisma schema changes.
+commonds:
+> npx prisma generate         // When you update the Prisma schema (e.g., add a model, add a field, update data type)
+                              // This updates the TypeScript client inside your project.
+                              // npx prisma generate DOES NOT create migration files
+> npx prisma db push          // Directly updates your database schema to match your schema.prisma
+> npx prisma studio           // View database in Prisma Studio
+> npx prisma migrate reset    // Never run this on RDS. and only locally
+> npx prisma migrate dev --name add-user-fields   // creates a database migration and applies it to your database (RDS, local, etc.)
+                                                  // npx prisma:  Runs Prisma CLI.
+                                                  // migrate dev: Compare my schema.prisma with the real database, Create a migration file, Apply it to the DB automatically, Regenerate Prisma Client
+                                                  // --name add-user-fields: Gives the migration a name in the folder.
+                                                  // prisma/migrations/20250116_add-user-fields/ migration.sql
+
+Q. difference between migrate dev vs npx prisma db push
+> npx prisma migrate dev --name add-user-fields create migration file and also gets deployed on postgres RDS
+  npx prisma db push : db push does NOT create migration files, Directly updates your database schema to match your schema.prisma, Does NOT track schema changes and Should NOT be used in production
+
+Q. difference between migrate dev vs npx prisma generate 
+>  npx prisma generate auto-generated TypeScript code that lets you write queries like prisma.user.findMany();
+   After you change the schema and want updated client types
+   After cloning a project
+   After adding new models/fields
+
+   It does NOT: Change your database, Create migrations, Update tables, Write anything to RDS
+
+   where as migrate dev actually creates or alters tables
+
+
+FINAL SUMMARY
+
+Prisma is an ORM for relational databases, and supports MongoDB in recent versions.
+npx prisma init sets up the Prisma folder and schema file.
+I define my models (tables) inside schema.prisma.
+npx prisma generate creates the Prisma Client, which gives me TypeScript methods like prisma.user.create(), prisma.user.findMany(), etc.
+npx prisma migrate dev --name xyz creates a migration file and applies it to my database (for me, AWS RDS Postgres).
+Every time I change the schema, a new migration is created.
+Once migrations have created the tables, I only interact with the DB using the Prisma Client in my Node.js backend.
+
+
+
+DAY 23. Auth Service Database Schema
+
+Q. Auth Service Database Schema (Paytm-style)
+> 1. users (Main User Table)
+  Stores core identity for BOTH consumers & merchants.
+
+  2. user_profiles (Extra Profile Data)
+  Stores additional user information (NOT sensitive banking stuff).
+
+  3. otps (For login/verification)
+  Temporary OTP storage
+
+  4. sessions (JWT or refresh token sessions)
+  When user logs in, you create a session.
+
+  5. user_devices (Device Trust Table)
+  Tracks verified devices.
+
+  6. merchants (Merchant-Specific Profile)
+  Only required if userType = "MERCHANT".
+
+
+
+Day 24.
+The issue
+AWS RDS Security Group was set to allow your old IP (from a previous Wi-Fi or network).
+When you switched Wi-Fi, your public IP changed.
+The old IP was no longer valid, so your connection attempts from the new IP were blocked.
+That’s why psql and Prisma couldn’t reach the database — it looked like it was hanging.
+
+🔹 Key points to remember
+“My IP” in Security Groups = the current public IP at the time you set it.
+Changing networks → new IP → old rule doesn’t work.
+0.0.0.0/0 allows all IPs (works but unsafe for production).
+
+🔹 How to fix
+Update the SG with your current IP.
+Or for dev, temporarily allow 0.0.0.0/0.
+For production, use static IP or bastion host to connect safely.
+
+For production / permanent solution:
+Use a static IP from your ISP
+Or connect via an EC2 bastion host in the same VPC
+Never leave 0.0.0.0/0 in production
+
+✅ Takeaway:
+The database was running fine. The connection was blocked because your current IP wasn’t allowed in the Security Group. Always check SG + public access when you cannot reach RDS.
+
+
+
+Day 25.
+Q. Why create folder prisma/client.ts?
+> Instead of importing Prisma like this everywhere:
+   import { PrismaClient } from "@prisma/client";
+   const prisma = new PrismaClient();
+
+  You create one shared instance and use like this
+   import { PrismaClient } from "@prisma/client";
+   export const prisma = new PrismaClient();
+
+Why? because
+If multiple parts of your code create new PrismaClient instances, your RDS can hit too many connections → crash.
+Clean imports
+Easier to mock in tests
+
+Q. Does Node.js automatically read .env?
+> NO — Node.js does NOT read .env files by itself. Node has no idea this file exists.
+  To make Node read .env, you must install: npm install dotenv
+  so 
+  .env = stores your variables
+  config/env.ts = loads them into Node.js
+
+  for Example
+  
+  import dotenv from "dotenv";
+  dotenv.config(); // loads .env into process.env
+
+  export const ENV = {
+    PORT: process.env.PORT || 4000,
+    DATABASE_URL: process.env.DATABASE_URL!,
+    JWT_SECRET: process.env.JWT_SECRET!,
+  };
+
+
+
+
+DAY 27.
+Q.What was the problem?
+> You were trying to connect your Node.js application (with Prisma 7) to an AWS RDS PostgreSQL database.
+  When you tried to create a user or run any query, it failed and gave errors like:
+  {
+  "status": {
+    "code": "P1011",
+    "meta": {
+      "driverAdapterError": {
+        "cause": {
+          "kind": "TlsConnectionError",
+          "reason": "self-signed certificate in certificate chain"
+        }
+      }
+    }
+  },
+  "database": "disconnected"
+}
+
+Even though psql could connect using sslmode=require.
+So Prisma could connect to the database, but query execution failed
+
+
+Q. Why this was the problem
+> Here’s the technical explanation in simple words:
+
+  1.AWS RDS uses SSL by default for public connections.
+   SSL is a protocol that encrypts the communication between your app and the database.
+   This ensures data is safe from hackers when traveling over the internet.
+
+  2.Prisma tries to verify the SSL certificate of the server.
+   A certificate is like a digital ID card for the database.
+   Prisma checks if the certificate is issued by a trusted authority.
+
+  3.AWS RDS uses a “self-signed” certificate by default for your DB instance.
+   Self-signed means: AWS signed it themselves, not a public certificate authority.
+   Node.js and Prisma do not trust self-signed certificates by default.
+
+  4.Because the certificate wasn’t trusted, Prisma refused the connection for queries (even if $connect() worked).
+
+
+Q. Why our solution works
+>. if (ENV.NODE_ENV !== 'production') {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+   }
+   - NODE_TLS_REJECT_UNAUTHORIZED = 0 tells Node.js to trust all SSL certificates, even self-signed ones.
+   - This bypasses the certificate verification.
+   - So now Prisma can run queries without complaining about SSL.
+✅ Important: You only did this for non-production environments, which is correct. In production, you should use a real, trusted certificate.
+
+
+Q. Why SSL / Certificates are needed at all
+>  - Encryption: SSL encrypts data between your server and database so hackers cannot see sensitive info (like passwords).
+   - Authentication: Certificates verify that you’re really connecting to the correct server. Without it, someone could impersonate the database.
+   - Data integrity: SSL ensures data is not tampered with in transit.
+Think of it like sending a sealed letter: the seal (certificate) proves the letter is from who you think it is and that it wasn’t opened on the way.
+
+Q. Why Prisma failed originally
+> - $connect() sometimes works because it just opens a TCP connection.
+  - But queries like user.create() require full SSL handshake and verification.
+  - Since Node.js rejected the self-signed certificate, Prisma threw TlsConnectionError.
+
+Q. The proper long-term solution
+> In production, do not disable certificate verification. Instead:
+1. Download AWS RDS root CA certificate:
+   AWS Docs: Using SSL/TLS with PostgreSQL
+   Example: rds-ca-2019-root.pem
+2. Point Node.js/Prisma to trust it:
+   import fs from 'fs';
+   import { PrismaClient } from '@prisma/client';
+
+   const prisma = new PrismaClient({
+   datasources: {
+       db: {
+       url: `postgresql://username:password@host:5432/dbname?sslmode=require&sslcert=${__dirname}/rds-ca-2019-root.pem`,
+      },
+   },
+   });
+
+This way Node verifies the certificate correctly.
+Queries are encrypted and safe, and Prisma works in production.
+
+
+SUMMARY:
+Problem: Prisma refused to run queries because it didn’t trust the database’s self-signed SSL certificate.
+Why: SSL certificates are like digital ID cards — Node.js only trusts recognized authorities.
+Your temporary solution: NODE_TLS_REJECT_UNAUTHORIZED=0 disables certificate verification for dev.
+Why it works: Prisma no longer checks if the certificate is trusted, so queries succeed.
+Why certificates matter: They encrypt data, verify identity, and prevent tampering.
+
+
+
+
+
+Day 29 
+Zod : Zod ensures the input is exactly what you expect before running your logic.
+Prisma only validates after data is inserted into the database, But most validation must happen before DB calls:
+Zod gives automatic TypeScript types
+
+You write schema once, and Zod generates:
+- Runtime validation
+- TypeScript interface
+
+for example 
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+type RegisterInput = z.infer<typeof registerSchema>;
+
+Zod Prevent security issues, Zod blocks all invalid input before it hits your backend.
+
+
+
+Day 30.
+What is Error Handling Middleware in Express?
+> In Express, any middleware with four arguments: (err, req, res, next) => { ... }
+
+Why Do We Need It?
+> Without global error middleware:
+- Every route needs a try/catch → messy
+- Errors become inconsistent → different formats
+- Hard to debug production issues
+- Validation errors and DB errors are not formatted cleanly
+- Code becomes difficult to maintain
+
+Create middleware file:
+Register it in app.ts AFTER routes :  next(err); // pass to central handler
+Modify your routes to throw errors instead of sending a response
+
+
+
+Day 31.
+Forgot password
+How OTP System Actually Works
+STEP 1 — User enters email or phone
+   POST /auth/forgot-password
+   {
+      "email": "abc@example.com"
+   }
+   OR 
+   {
+      "phone": "9876543210"
+   }
+
+STEP 2 — Server checks does user exist?
+   If user does NOT exist → respond: { "status": "ok" }
+   (We do NOT reveal “User does not exist”, this prevents attackers from checking if an email exists.)
+
+STEP 3 — Server generates OTP
+   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+   We save OTP into database:
+   otp, userId, expiresAt (10 minutes), used = false
+
+
+STEP 4 — Server sends SMS / Email
+   If phone:
+   sendSMS(phone, `Your OTP is ${otp}`);
+
+   If email:
+   sendEmail(email, `Your OTP is ${otp}`);
+
+   (but for development → we just console.log("OTP:", otp))
+
+
+STEP 5 — User receives OTP → enters in app
+   Client:
+   POST /auth/verify-otp
+   {
+   "email": "abc@example.com",
+   "otp": "123456"
+   }
+
+   Server:
+   Load OTP from database
+
+   Check:
+   OTP correct?
+   Not expired?
+   Not used?
+   If valid → generate resetToken (JWT or random string)
+
+   Example resetToken:
+   const resetToken = crypto.randomUUID();
+
+   Save resetToken in DB.
+   Return:
+   {
+   "resetToken": "xxxxxx"
+   }
+
+
+STEP 6 — User enters new password
+   Client:
+   POST /auth/reset-password
+   {
+   "resetToken": "xxxxxx",
+   "newPassword": "Hello@123"
+   }
+
+
+   Server:
+   Validate resetToken
+   Update password
+   Mark reset request as used = true
+   Delete all sessions (logout everywhere)
+   Return success.
+

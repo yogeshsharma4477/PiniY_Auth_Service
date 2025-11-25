@@ -1,0 +1,24 @@
+1. Auth Service skeleton with a /health route working and Prisma connected to your RDS database.
+2. Sessions or tokens (JWT or refresh tokens)
+3. OTP or email verification (if using phone/email login)
+4. Roles (User, Merchant, Admin)
+5. Any merchant-specific tables if you plan to handle payments.
+
+
+
+Next Step
+Add Input Validation using Zod
+Add Error Handling Middleware
+Add Token Refresh System
+Add Role-Based Authorization
+Add Password Reset + OTP
+Create API Documentation - Swagger
+Add Logging & Monitoring - you recommend that for learning which i shoudl use 
+Add Testing - this also you recommond based on what usually big companies uses 
+Deployment
+Deploy with:
+Docker
+ECS / EKS / Lambda
+Nginx reverse proxy
+SSL + HTTPS
+Make sure RDS connects only from your VPC.
