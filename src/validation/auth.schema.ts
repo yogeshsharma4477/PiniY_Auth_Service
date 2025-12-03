@@ -37,8 +37,22 @@ export const sendOtpSchema = z.object({
 });
 
 export const verifyOtpSchema = z.object({
-  phone: trimmedString().regex(/^\+[1-9]\d{1,14}$/),
-  otp: z.string().length(4),
+  phone: trimmedString().regex(/^\+[1-9]\d{1,14}$/).optional(),
+  email: trimmedString().optional(),
+  otp: z.string().length(6),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().optional(),
+  phone: z.string().min(10).optional(),
+}).refine((data) => data.email || data.phone, {
+  message: "Either email or phone is required",
+  path: ["email", "phone"],
+});
+
+export const resetPasswordSchema = z.object({
+  resetToken: z.string(),
+  newPassword: z.string().min(6),
 });
 
 // Types exported for controller convenience
