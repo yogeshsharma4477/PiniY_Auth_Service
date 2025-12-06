@@ -1,8 +1,67 @@
+# Dependencies
+node_modules/
+package-lock.json
 
-/src/generated/prisma
 
-/generated/prisma
+# Environment variables
+.env
+.env.local
 
-/generated/prisma
 
-/generated/prisma
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Build & Output
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+
+# Database
+*.sqlite
+*.db
+
+# Runtime
+.next/
+.nuxt/
+.cache/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# IDE & Editor
+.vscode/
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+.DS_Store
+.env.example
+
+# Project-specific
+generated/
+dist/
+build/
+.nvmrc
+
+# Temporary & Note files
+z*.txt
+*.tmp
+.turbo/

@@ -6,7 +6,8 @@ import { ENV } from "../config/env";
 import { RegisterInput, LoginInput } from "../validation/auth.schema";
 import { Request, Response, NextFunction } from 'express';
 
-export const RegisterController =  async  (req: Request, res: Response, next: NextFunction) => {
+//@ts-ignore // this will ignore next line error
+export const RegisterController =  async  (req, res: Response, next: NextFunction) => {
   const data = (req as any).validated.body as RegisterInput;
 
   try {

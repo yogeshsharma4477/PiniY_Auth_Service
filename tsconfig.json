@@ -10,5 +10,5 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src"]
+  "include": ["src", "src/swagger/openapi.yaml"]
 }

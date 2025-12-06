@@ -1,4 +1,4 @@
-import { ZodObject, ZodError } from "zod";
+import { ZodTypeAny, ZodError } from "zod";
 import { Request, Response, NextFunction } from "express";
 
 /**
@@ -6,7 +6,7 @@ import { Request, Response, NextFunction } from "express";
  * property defaults to "body" but you can pass "query" or "params"
  */
 export const validate =
-  (schema: ZodObject, property: "body" | "query" | "params" = "body") =>
+  (schema: ZodTypeAny, property: "body" | "query" | "params" = "body") =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
       const input = req[property];

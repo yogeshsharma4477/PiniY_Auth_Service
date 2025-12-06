@@ -4,8 +4,12 @@ const trimmedString = () => z.string().trim();
 
 // Register
 export const registerSchema = z.object({
-  email: trimmedString().optional(),
-  phone: trimmedString()
+  email: z
+    .string()
+    .trim()
+    .email("Invalid email format")
+    .optional(),
+  phone: trimmedString().min(10)
     .regex(/^\+[1-9]\d{1,14}$/, { message: "Phone must be in E.164 format, e.g. +919876543210" })
     .optional(),
   password: z.string().min(6).max(128),
@@ -18,7 +22,7 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   // allow login by email or phone
   email: trimmedString().email().optional(),
-  phone: trimmedString()
+  phone: trimmedString().min(10)
     .regex(/^\+[1-9]\d{1,14}$/, { message: "Phone must be in E.164 format" })
     .optional(),
   password: z.string().min(6),
@@ -38,12 +42,20 @@ export const sendOtpSchema = z.object({
 
 export const verifyOtpSchema = z.object({
   phone: trimmedString().regex(/^\+[1-9]\d{1,14}$/).optional(),
-  email: trimmedString().optional(),
+  email:  z
+    .string()
+    .trim()
+    .email("Invalid email format")
+    .optional(),
   otp: z.string().length(6),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().optional(),
+  email:  z
+    .string()
+    .trim()
+    .email("Invalid email format")
+    .optional(),
   phone: z.string().min(10).optional(),
 }).refine((data) => data.email || data.phone, {
   message: "Either email or phone is required",

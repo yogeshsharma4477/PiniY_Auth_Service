@@ -14,7 +14,7 @@ export const forgotPasswordController =  async  (req: Request, res: Response, ne
     if (!user) return res.json({ status: "ok" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     await prisma.passwordReset.create({
       data: {
@@ -25,7 +25,7 @@ export const forgotPasswordController =  async  (req: Request, res: Response, ne
     });
 
     // DEMO MODE → log OTP instead of sending SMS/email
-    console.log(`📩 OTP for user ${user.id}:`, otp);
+    console.log(`OTP for user ${user.id}:`, otp);
 
     return res.json({ status: "ok" });
   } catch (err) {
@@ -86,7 +86,7 @@ export const resetPasswordController =  async  (req: Request, res: Response, nex
       return res.status(400).json({ error: "invalid_or_expired_token" });
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 10);  
 
     await prisma.user.update({
       where: { id: session.userId },
