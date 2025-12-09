@@ -1,7 +1,7 @@
 import express  from "express";
-import health from "./routes/health.route";
-import auth from "./routes/auth.route";
-import { setupSwagger } from "./swagger/swagger";
+import health from "./routes/health.route.js";
+import auth from "./routes/auth.route.js";
+import { setupSwagger } from "./swagger/swagger.js";
 const app = express();
 
 app.use(express.json());

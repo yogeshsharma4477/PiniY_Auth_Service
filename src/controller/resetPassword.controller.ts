@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../prisma/client";
+import { prisma } from "../prisma/client.js";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from 'express';
 

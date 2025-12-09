@@ -1,7 +1,9 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
+   jsTarget = "node16"
 }
+
 
 datasource db {
   provider = "postgresql"

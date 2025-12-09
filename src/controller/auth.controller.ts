@@ -1,9 +1,9 @@
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { prisma } from "../prisma/client";
-import { ENV } from "../config/env";
-import { RegisterInput, LoginInput } from "../validation/auth.schema";
+import { prisma } from "../prisma/client.js";
+import { ENV } from "../config/env.js";
+import { RegisterInput, LoginInput } from "../validation/auth.schema.js";
 import { Request, Response, NextFunction } from 'express';
 
 //@ts-ignore // this will ignore next line error

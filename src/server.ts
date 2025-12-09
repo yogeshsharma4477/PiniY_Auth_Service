@@ -1,6 +1,6 @@
-import app from "./app";
-import { ENV } from "./config/env";
-import { errorHandler } from "./middleware/errorHandler";
+import app from "./app.js";
+import { ENV } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 // must be last middleware
 app.use(errorHandler);

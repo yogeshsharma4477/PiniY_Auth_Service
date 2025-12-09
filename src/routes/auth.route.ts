@@ -1,9 +1,9 @@
 // src/routes/auth.route.ts
 import { Router } from "express";
-import { validate } from "../middleware/validate";
-import { registerSchema, loginSchema,forgotPasswordSchema, verifyOtpSchema, resetPasswordSchema } from "../validation/auth.schema";
-import { LoginController, RegisterController } from "../controller/auth.controller";
-import { forgotPasswordController, resetPasswordController, verifyOtpController } from "../controller/resetPassword.controller";
+import { validate } from "../middleware/validate.js";
+import { registerSchema, loginSchema,forgotPasswordSchema, verifyOtpSchema, resetPasswordSchema } from "../validation/auth.schema.js";
+import { LoginController, RegisterController } from "../controller/auth.controller.js";
+import { forgotPasswordController, resetPasswordController, verifyOtpController } from "../controller/resetPassword.controller.js";
 
 
 const router = Router();
