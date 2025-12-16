@@ -17,7 +17,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc && cp -r src/swagger dist/ && npm run copy:prisma",
-    "copy:prisma": "cp -R src/generated dist/generated",
+    "copy:prisma": "rm -rf dist/generated && cp -R src/generated dist/generated",
     "dev": "tsx watch src/server.ts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
