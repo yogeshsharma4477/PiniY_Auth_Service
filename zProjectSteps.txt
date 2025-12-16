@@ -22,3 +22,13 @@ ECS / EKS / Lambda
 Nginx reverse proxy
 SSL + HTTPS
 Make sure RDS connects only from your VPC.
+
+
+
+next steps:
+ - push an image to a registry
+1️⃣ Create docker-compose for microservices
+2️⃣ Add PostgreSQL container
+3️⃣ Prepare for production deployment
+4️⃣ Push image to Docker Hub
+5️⃣ AWS ECS deployment guide

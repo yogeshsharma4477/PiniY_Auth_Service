@@ -65,3 +65,5 @@ build/
 z*.txt
 *.tmp
 .turbo/
+
+.auth-service.pem
